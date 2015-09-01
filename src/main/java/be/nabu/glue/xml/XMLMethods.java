@@ -17,9 +17,9 @@ import be.nabu.glue.ScriptRuntime;
 import be.nabu.glue.impl.methods.ScriptMethods;
 import be.nabu.glue.impl.methods.TestMethods;
 import be.nabu.libs.evaluator.annotations.MethodProviderClass;
+import be.nabu.libs.types.ComplexContentWrapperFactory;
 import be.nabu.libs.types.api.ComplexContent;
 import be.nabu.libs.types.binding.xml.XMLBinding;
-import be.nabu.libs.types.java.BeanInstance;
 import be.nabu.libs.types.xml.XMLContent;
 import be.nabu.utils.xml.BaseNamespaceResolver;
 import be.nabu.utils.xml.XMLUtils;
@@ -34,7 +34,7 @@ public class XMLMethods {
 		return xml(object, false);
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "unchecked" })
 	public static String stringify(Object object) throws TransformerException, IOException {
 		if (object instanceof Document) {
 			return XMLUtils.toString(((Document) object).getDocumentElement(), true, true);
@@ -45,7 +45,7 @@ public class XMLMethods {
 				content = (ComplexContent) object;
 			}
 			else {
-				content = new BeanInstance(object);
+				content = ComplexContentWrapperFactory.getInstance().getWrapper().wrap(object);
 			}
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			XMLBinding binding = new XMLBinding(content.getType(), ScriptRuntime.getRuntime().getScript().getCharset());
