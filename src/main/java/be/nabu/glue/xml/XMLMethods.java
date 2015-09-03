@@ -152,4 +152,22 @@ public class XMLMethods {
 		}
 		return result;
 	}
+	
+	public static boolean confirmXMLEquals(String message, Object expected, Object actual) throws IOException, SAXException, ParserConfigurationException, TransformerException {
+		boolean result;
+		if (expected == null) {
+			result = TestMethods.confirmTrue(message, actual == null);
+		}
+		else {
+			result = TestMethods.confirmTrue(message, actual != null);
+		}
+		if (result) {
+			String xdiff = xdiff(actual, expected);
+			if (xdiff != null && xdiff.isEmpty()) {
+				xdiff = null;
+			}
+			result &= TestMethods.confirmNull(message + " (xdiff)", xdiff);
+		}
+		return result;
+	}
 }
