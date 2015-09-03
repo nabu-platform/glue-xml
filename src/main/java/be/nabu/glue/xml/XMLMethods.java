@@ -20,7 +20,6 @@ import be.nabu.libs.evaluator.annotations.MethodProviderClass;
 import be.nabu.libs.types.ComplexContentWrapperFactory;
 import be.nabu.libs.types.api.ComplexContent;
 import be.nabu.libs.types.binding.xml.XMLBinding;
-import be.nabu.libs.types.xml.XMLContent;
 import be.nabu.utils.xml.BaseNamespaceResolver;
 import be.nabu.utils.xml.XMLUtils;
 import be.nabu.utils.xml.XPath;
@@ -57,7 +56,11 @@ public class XMLMethods {
 	public static Object objectify(Object object) throws IOException, SAXException, ParserConfigurationException {
 		String string = ScriptMethods.string(object);
 		Document document = XMLUtils.toDocument(new ByteArrayInputStream(string.getBytes(ScriptRuntime.getRuntime().getScript().getCharset())), false);
-		return new XMLContent(document.getDocumentElement());
+		// return it as a map, that has good support in glue
+		// the problem with XMLContent is that it has no type information which can become tricky for marshalling etc
+		// the map stuff however has intelligent type guessing
+		return XMLUtils.toMap(document.getDocumentElement());
+//		return new XMLContent(document.getDocumentElement());
 	}
 	
 	public static Node xml(Object object, boolean namespaceAware) throws IOException, SAXException, ParserConfigurationException {
