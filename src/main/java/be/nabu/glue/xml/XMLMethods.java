@@ -20,6 +20,8 @@ import be.nabu.libs.evaluator.annotations.MethodProviderClass;
 import be.nabu.libs.types.ComplexContentWrapperFactory;
 import be.nabu.libs.types.api.ComplexContent;
 import be.nabu.libs.types.binding.xml.XMLBinding;
+import be.nabu.libs.validator.api.Validation;
+import be.nabu.libs.validator.api.ValidationMessage.Severity;
 import be.nabu.utils.xml.BaseNamespaceResolver;
 import be.nabu.utils.xml.XMLUtils;
 import be.nabu.utils.xml.XPath;
@@ -133,6 +135,16 @@ public class XMLMethods {
 		Document sourceDocument = (Document) xml(source);
 		Document targetDocument = (Document) xml(target);
 		return diff.diff(sourceDocument, targetDocument).asTargetPatch();
+	}
+	
+	public static boolean validateXML(String message, Object xsd, Object xml) throws IOException, ParserConfigurationException, SAXException {
+		boolean success = true;
+		String baseURI = xsd instanceof String ? ((String) xsd).replaceAll("/[^/]+$", "") : null;
+		for (Validation<?> validation : XMLUtils.validate(xml(xml, true), XMLUtils.toSchema(baseURI, new ByteArrayInputStream(ScriptMethods.bytes(xsd))) )){
+			TestMethods.addValidation(validation.getSeverity(), validation.getMessage(), message, false);
+			success &= Severity.INFO.equals(validation.getSeverity()) || Severity.WARNING.equals(validation.getSeverity());
+		}
+		return success;
 	}
 	
 	public static boolean validateXMLEquals(String message, Object expected, Object actual) throws IOException, SAXException, ParserConfigurationException, TransformerException {
