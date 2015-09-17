@@ -3,9 +3,16 @@ package be.nabu.glue.xml;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -14,9 +21,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import be.nabu.glue.ScriptRuntime;
+import be.nabu.glue.annotations.GlueParam;
 import be.nabu.glue.impl.methods.ScriptMethods;
 import be.nabu.glue.impl.methods.TestMethods;
+import be.nabu.libs.evaluator.ContextAccessorFactory;
+import be.nabu.libs.evaluator.EvaluationException;
 import be.nabu.libs.evaluator.annotations.MethodProviderClass;
+import be.nabu.libs.evaluator.api.ContextAccessor;
+import be.nabu.libs.evaluator.api.ListableContextAccessor;
 import be.nabu.libs.types.ComplexContentWrapperFactory;
 import be.nabu.libs.types.api.ComplexContent;
 import be.nabu.libs.types.binding.xml.XMLBinding;
@@ -121,7 +133,7 @@ public class XMLMethods {
 		return array;
 	}
 	
-	public static String xdiff(Object source, Object target) throws IOException, SAXException, ParserConfigurationException, TransformerException {
+	public static String xdiff(Object source, Object target, String...blackListPaths) throws IOException, SAXException, ParserConfigurationException, TransformerException {
 		if (source == null && target == null) {
 			return null;
 		}
@@ -134,7 +146,36 @@ public class XMLMethods {
 		XMLDiff diff = new XMLDiff(new SimpleDiff());
 		Document sourceDocument = (Document) xml(source);
 		Document targetDocument = (Document) xml(target);
-		return diff.diff(sourceDocument, targetDocument).asTargetPatch();
+		diff.diff(sourceDocument, targetDocument);
+		if (blackListPaths != null && blackListPaths.length > 0) {
+			diff.filter(blackListPaths);
+		}
+		return diff.asTargetPatch();
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private static Transformer toTransformer(Object xsl, Object context) throws TransformerConfigurationException, IOException, SAXException, ParserConfigurationException, EvaluationException {
+		Map<String, Object> parameters = new HashMap<String, Object>();
+		if (context != null) {
+			ContextAccessor accessor = ContextAccessorFactory.getInstance().getAccessor(context.getClass());
+			if (accessor instanceof ListableContextAccessor) {
+				Collection<String> fields = ((ListableContextAccessor) accessor).list(context);
+				for (String field : fields) {
+					parameters.put(field, accessor.get(context, field));
+				}
+			}
+		}
+		return XMLUtils.newTransformer(new DOMSource(xml(xsl, true)), parameters);
+	}
+	
+	public static String xsl(
+			@GlueParam(name = "xml", description = "The XML to transform") Object source, 
+			@GlueParam(name = "xsl", description = "The XSL to transform it with") Object xsl, 
+			@GlueParam(name = "input", description = "Any input parameters for the XSL, can be a map, structure,...", defaultValue = "null") Object context) throws IOException, SAXException, ParserConfigurationException, EvaluationException, TransformerException {
+		Transformer transformer = toTransformer(xsl, context);
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		transformer.transform(new DOMSource(xml(source, true)), new StreamResult(output));
+		return new String(output.toByteArray());
 	}
 	
 	public static boolean validateXML(String message, Object xsd, Object xml) throws IOException, ParserConfigurationException, SAXException {
@@ -147,7 +188,7 @@ public class XMLMethods {
 		return success;
 	}
 	
-	public static boolean validateXMLEquals(String message, Object expected, Object actual) throws IOException, SAXException, ParserConfigurationException, TransformerException {
+	public static boolean validateXMLEquals(String message, Object expected, Object actual, String...blackListPaths) throws IOException, SAXException, ParserConfigurationException, TransformerException {
 		boolean result;
 		if (expected == null) {
 			result = TestMethods.validateTrue(message, actual == null);
@@ -156,7 +197,7 @@ public class XMLMethods {
 			result = TestMethods.validateTrue(message, actual != null);
 		}
 		if (result) {
-			String xdiff = xdiff(actual, expected);
+			String xdiff = xdiff(actual, expected, blackListPaths);
 			if (xdiff != null && xdiff.isEmpty()) {
 				xdiff = null;
 			}
@@ -165,7 +206,7 @@ public class XMLMethods {
 		return result;
 	}
 	
-	public static boolean confirmXMLEquals(String message, Object expected, Object actual) throws IOException, SAXException, ParserConfigurationException, TransformerException {
+	public static boolean confirmXMLEquals(String message, Object expected, Object actual, String...blackListPaths) throws IOException, SAXException, ParserConfigurationException, TransformerException {
 		boolean result;
 		if (expected == null) {
 			result = TestMethods.confirmTrue(message, actual == null);
@@ -174,7 +215,7 @@ public class XMLMethods {
 			result = TestMethods.confirmTrue(message, actual != null);
 		}
 		if (result) {
-			String xdiff = xdiff(actual, expected);
+			String xdiff = xdiff(actual, expected, blackListPaths);
 			if (xdiff != null && xdiff.isEmpty()) {
 				xdiff = null;
 			}
