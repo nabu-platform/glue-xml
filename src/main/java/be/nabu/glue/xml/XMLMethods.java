@@ -68,7 +68,7 @@ public class XMLMethods {
 	}
 	
 	public static Object objectify(Object object) throws IOException, SAXException, ParserConfigurationException {
-		String string = ScriptMethods.string(object);
+		String string = ScriptMethods.string(object, null);
 		Document document = XMLUtils.toDocument(new ByteArrayInputStream(string.getBytes(ScriptRuntime.getRuntime().getScript().getCharset())), false);
 		// return it as a map, that has good support in glue
 		// the problem with XMLContent is that it has no type information which can become tricky for marshalling etc
