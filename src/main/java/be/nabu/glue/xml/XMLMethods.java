@@ -32,6 +32,9 @@ import be.nabu.libs.evaluator.api.ListableContextAccessor;
 import be.nabu.libs.types.ComplexContentWrapperFactory;
 import be.nabu.libs.types.api.ComplexContent;
 import be.nabu.libs.types.binding.xml.XMLBinding;
+import be.nabu.libs.types.map.MapContent;
+import be.nabu.libs.types.map.MapContentWrapper;
+import be.nabu.libs.types.map.MapType;
 import be.nabu.libs.validator.api.Validation;
 import be.nabu.libs.validator.api.ValidationMessage.Severity;
 import be.nabu.utils.xml.BaseNamespaceResolver;
@@ -73,7 +76,10 @@ public class XMLMethods {
 		// return it as a map, that has good support in glue
 		// the problem with XMLContent is that it has no type information which can become tricky for marshalling etc
 		// the map stuff however has intelligent type guessing
-		return XMLUtils.toMap(document.getDocumentElement());
+		Map<String, ?> map = XMLUtils.toMap(document.getDocumentElement());
+		MapType buildFromContent = MapContentWrapper.buildFromContent(map);
+		buildFromContent.setName(document.getDocumentElement().getNodeName().replaceAll("^.*:", ""));
+		return new MapContent(buildFromContent, map);
 //		return new XMLContent(document.getDocumentElement());
 	}
 	
