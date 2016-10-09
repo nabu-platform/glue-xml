@@ -20,10 +20,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import be.nabu.glue.ScriptRuntime;
 import be.nabu.glue.annotations.GlueParam;
-import be.nabu.glue.impl.methods.ScriptMethods;
-import be.nabu.glue.impl.methods.TestMethods;
+import be.nabu.glue.core.impl.methods.ScriptMethods;
+import be.nabu.glue.core.impl.methods.TestMethods;
+import be.nabu.glue.utils.ScriptRuntime;
 import be.nabu.libs.evaluator.ContextAccessorFactory;
 import be.nabu.libs.evaluator.EvaluationException;
 import be.nabu.libs.evaluator.annotations.MethodProviderClass;

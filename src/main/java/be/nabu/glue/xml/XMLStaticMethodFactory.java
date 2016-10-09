@@ -3,7 +3,7 @@ package be.nabu.glue.xml;
 import java.util.ArrayList;
 import java.util.List;
 
-import be.nabu.glue.api.StaticMethodFactory;
+import be.nabu.glue.core.api.StaticMethodFactory;
 
 public class XMLStaticMethodFactory implements StaticMethodFactory {
 
