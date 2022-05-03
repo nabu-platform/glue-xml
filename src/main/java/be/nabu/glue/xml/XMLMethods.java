@@ -79,7 +79,9 @@ public class XMLMethods {
 		Map<String, ?> map = XMLUtils.toMap(document.getDocumentElement());
 		MapType buildFromContent = MapContentWrapper.buildFromContent(map);
 		buildFromContent.setName(document.getDocumentElement().getNodeName().replaceAll("^.*:", ""));
-		return new MapContent(buildFromContent, map);
+		MapContent mapContent = new MapContent(buildFromContent, map);
+		mapContent.setWrapMaps(true);
+		return mapContent;
 //		return new XMLContent(document.getDocumentElement());
 	}
 	
