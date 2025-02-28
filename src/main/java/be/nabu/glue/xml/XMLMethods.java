@@ -68,7 +68,7 @@ public class XMLMethods {
 	}
 	
 	@SuppressWarnings({ "unchecked" })
-	public static String stringify(Object object) throws TransformerException, IOException {
+	public static String stringify(@GlueParam(name = "object") Object object, @GlueParam(name = "pretty") Boolean prettyPrint) throws TransformerException, IOException {
 		if (object instanceof Document) {
 			return XMLUtils.toString(((Document) object).getDocumentElement(), true, true);
 		}
@@ -82,6 +82,9 @@ public class XMLMethods {
 			}
 			ByteArrayOutputStream output = new ByteArrayOutputStream();
 			XMLBinding binding = new XMLBinding(content.getType(), ScriptRuntime.getRuntime().getScript().getCharset());
+			if (prettyPrint != null) {
+				binding.setPrettyPrint(prettyPrint);
+			}
 			binding.marshal(output, content);
 			return new String(output.toByteArray(), ScriptRuntime.getRuntime().getScript().getCharset());
 		}
