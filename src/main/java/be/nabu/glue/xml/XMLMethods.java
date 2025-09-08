@@ -48,6 +48,7 @@ import be.nabu.libs.evaluator.api.ContextAccessor;
 import be.nabu.libs.evaluator.api.ListableContextAccessor;
 import be.nabu.libs.types.ComplexContentWrapperFactory;
 import be.nabu.libs.types.api.ComplexContent;
+import be.nabu.libs.types.api.ModifiableComplexType;
 import be.nabu.libs.types.binding.xml.XMLBinding;
 import be.nabu.libs.types.map.MapContent;
 import be.nabu.libs.types.map.MapContentWrapper;
@@ -97,7 +98,7 @@ public class XMLMethods {
 		// the problem with XMLContent is that it has no type information which can become tricky for marshalling etc
 		// the map stuff however has intelligent type guessing
 		Map<String, ?> map = XMLUtils.toMap(document.getDocumentElement());
-		MapType buildFromContent = MapContentWrapper.buildFromContent(map);
+		ModifiableComplexType buildFromContent = MapContentWrapper.buildFromContent(map);
 		buildFromContent.setName(document.getDocumentElement().getNodeName().replaceAll("^.*:", ""));
 		MapContent mapContent = new MapContent(buildFromContent, map);
 		mapContent.setWrapMaps(true);
